@@ -15,10 +15,10 @@ import serial
 import time
 
 """init Arduino connection"""
-try:
-    ser = serial.Serial(port='COM3', baudrate=9600)
-except serial.SerialException:
-    print("Error: could not connect to sensor")
+#try:
+ser = serial.Serial(port='COM3', baudrate=9600)
+#except serial.SerialException:
+#    print("Error: could not connect to sensor")
 """init TkInter"""
 width = 1280
 height = 720
@@ -143,6 +143,7 @@ while True:
         if ser.is_open == True:
             data = float(ser.readline())
             status = "Connected"
+
         if ser.is_open == False:
             satus = "Failed to connect"
         y = center_y - np.sin(angle[i]) * data * 100
