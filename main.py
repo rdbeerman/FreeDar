@@ -12,13 +12,7 @@ import numpy as np
 import tools as tl
 import pandas as pd
 import serial
-import time
 
-"""init Arduino connection"""
-try:
-    ser = serial.Serial(port='COM3', baudrate=9600)
-except serial.SerialException:
-    print("Error: could not connect to sensor")
 """init TkInter"""
 width = 1280
 height = 720
@@ -28,6 +22,8 @@ tk.resizable(True, True)
 # tk.wm_attributes("-topmost" 1)                     # enables the window to always be on the top
 canvas = Canvas(tk, width=width, height=height, bd=0, highlightthickness=0)
 canvas.pack(fill=BOTH, expand=1)
+comport = StringVar(tk)
+comport.set("COM1")
 tk.update()
 
 """"init Variables"""
@@ -38,6 +34,7 @@ y_array = []
 lines = True
 points = True
 saving = False
+connected = False
 status = "Not Connected"
 p_radius = 2
 tick = 0
@@ -52,6 +49,7 @@ def linesButtonSwitch():
     elif lines == False:
         lines = True
 
+
 def pointsButtonSwitch():
     global points
     if points == True:
@@ -60,9 +58,11 @@ def pointsButtonSwitch():
     elif points == False:
         points = True
 
+
 def on_closing():
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
         canvas.destroy()
+
 
 def resize(event):
     global center_x
@@ -82,7 +82,17 @@ def resize(event):
     canvas.coords("text_range1", center_x, center_y - 100)
     canvas.coords("text_range2", center_x, center_y - 200)
     canvas.coords("text_status", width - 10, height)
-    print(center_y)
+
+
+def connect():
+    global connected
+    if connected == False:
+        try:
+            ser = serial.Serial(port='COM3', baudrate=9600)
+        except serial.SerialException:
+            print("Error: could not connect to sensor")
+        connected = True
+
 
 def savedata():
     global x_array
@@ -124,6 +134,10 @@ button_points = Checkbutton(tk, text="Points", command=pointsButtonSwitch, ancho
 button_points_window = canvas.create_window(10, 60, anchor=NW, window=button_points)
 button_points.toggle()
 
+portselect = OptionMenu(tk, comport, "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7")
+portselect_window = canvas.create_window(10, 120, anchor=NW, window=portselect)
+portselect.pack()
+
 button_save = Button(tk, text="Toggle Saving", command=savedata, anchor=W)
 button_save.configure(width=15, activebackground="#33B5E5", relief=FLAT)
 button_save = canvas.create_window(10, 90, anchor=NW, window=button_save)
@@ -139,25 +153,24 @@ while True:
         y_array = []                                      # purge y_array
 
     for i in range(0, len(angle)):                         # Translate input data into coordinates
-        if ser.is_open == True:
+        if connected == True:
             data = float(ser.readline())
             y = center_y - np.sin(angle[i]) * data * 100
             x = center_x + np.cos(angle[i]) * data * 100
             x_array.append(x)
             y_array.append(y)
             status = "Connected"
+            if lines == True:  # Plot coordinates as lines
+                canvas.delete("line_id[i]")
+                line_id = canvas.create_line(canvas.winfo_width() / 2, canvas.winfo_height() / 2, x, y, tag="line_id")
 
-        if ser.is_open == False:
+            if points == True:
+                canvas.delete("point_id[i]")
+                point_id = canvas.create_oval(x - p_radius, y - p_radius, x + p_radius,
+                                              y + p_radius, width=0, fill='red', tag="point_id")
+        if connected == False:
             satus = "Failed to connect"
 
-        if lines == True:                                 # Plot coordinates as lines
-            canvas.delete("line_id[i]")
-            line_id = canvas.create_line(canvas.winfo_width() / 2, canvas.winfo_height() / 2, x, y, tag="line_id")
-
-        if points == True:
-            canvas.delete("point_id[i]")
-            point_id = canvas.create_oval(x - p_radius, y - p_radius, x + p_radius,
-                                              y + p_radius,width=0, fill='red', tag="point_id")
             #time.sleep(0.01)
         tk.update()
 
@@ -165,9 +178,9 @@ while True:
     #print(tick)                                           # for debugging
     canvas.update_idletasks()
     #time.sleep(0.1)                                       # if slowdown is needed
-    tk.update()
     canvas.bind("<Configure>", resize)
     tk.protocol("WM_DELETE_WINDOW", on_closing)
+    tk.update()
 
 tk.mainloop()
 ser.close()
