@@ -15,10 +15,10 @@ import serial
 import time
 
 """init Arduino connection"""
-#try:
-ser = serial.Serial(port='COM3', baudrate=9600)
-#except serial.SerialException:
-#    print("Error: could not connect to sensor")
+try:
+    ser = serial.Serial(port='COM3', baudrate=9600)
+except serial.SerialException:
+    print("Error: could not connect to sensor")
 """init TkInter"""
 width = 1280
 height = 720
@@ -38,7 +38,6 @@ y_array = []
 lines = True
 points = True
 saving = False
-global status
 status = "Not Connected"
 p_radius = 2
 tick = 0
@@ -117,13 +116,13 @@ text_range1 = canvas.create_text(center_x, center_y - 100, text='1 m', anchor=SW
 grid_range2 = canvas.create_oval(center_x-200, center_y-200, center_x+200, center_y+200, dash=4, tag="grid_range2")
 text_range2 = canvas.create_text(center_x, center_y - 200, text='2 m', anchor=SW, tag="text_range2")
 
-button_lines = Button(tk, text="Toggle Lines", command=linesButtonSwitch, anchor=W)
-button_lines.configure(width=15, activebackground="#33B5E5", relief=FLAT)
+button_lines = Checkbutton(tk, text="Lines", anchor=W, variable=lines, onvalue=TRUE, offvalue=FALSE, command=linesButtonSwitch)
 button_lines_window = canvas.create_window(10, 30, anchor=NW, window=button_lines)
+button_lines.toggle()
 
-button_points = Button(tk, text="Toggle Points", command=pointsButtonSwitch, anchor=W)
-button_points.configure(width=15, activebackground="#33B5E5", relief=FLAT)
+button_points = Checkbutton(tk, text="Points", command=pointsButtonSwitch, anchor=W)
 button_points_window = canvas.create_window(10, 60, anchor=NW, window=button_points)
+button_points.toggle()
 
 button_save = Button(tk, text="Toggle Saving", command=savedata, anchor=W)
 button_save.configure(width=15, activebackground="#33B5E5", relief=FLAT)
@@ -142,14 +141,15 @@ while True:
     for i in range(0, len(angle)):                         # Translate input data into coordinates
         if ser.is_open == True:
             data = float(ser.readline())
+            y = center_y - np.sin(angle[i]) * data * 100
+            x = center_x + np.cos(angle[i]) * data * 100
+            x_array.append(x)
+            y_array.append(y)
             status = "Connected"
 
         if ser.is_open == False:
             satus = "Failed to connect"
-        y = center_y - np.sin(angle[i]) * data * 100
-        x = center_x + np.cos(angle[i]) * data * 100
-        x_array.append(x)
-        y_array.append(y)
+
         if lines == True:                                 # Plot coordinates as lines
             canvas.delete("line_id[i]")
             line_id = canvas.create_line(canvas.winfo_width() / 2, canvas.winfo_height() / 2, x, y, tag="line_id")

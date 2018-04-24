@@ -37,12 +37,13 @@ y_array = []
 lines = True
 points = True
 saving = False
-global status
 status = "Standby"
 p_radius = 2
 tick = 0
 
 """init Functions"""
+
+
 def linesButtonSwitch():
     global lines
     if lines == True:
@@ -52,6 +53,7 @@ def linesButtonSwitch():
     elif lines == False:
         lines = True
 
+
 def pointsButtonSwitch():
     global points
     if points == True:
@@ -60,9 +62,11 @@ def pointsButtonSwitch():
     elif points == False:
         points = True
 
+
 def on_closing():
     if messagebox.askokcancel("Quit", "Do you want to quit?"):
         canvas.destroy()
+
 
 def resize(event):
     global center_x
@@ -83,6 +87,7 @@ def resize(event):
     canvas.coords("text_range2", center_x, center_y - 200)
     canvas.coords("text_status", width - 10, height)
     print(center_y)
+
 
 def savedata():
     global x_array
@@ -116,38 +121,38 @@ text_range1 = canvas.create_text(center_x, center_y - 100, text='1 m', anchor=SW
 grid_range2 = canvas.create_oval(center_x-200, center_y-200, center_x+200, center_y+200, dash=4, tag="grid_range2")
 text_range2 = canvas.create_text(center_x, center_y - 200, text='2 m', anchor=SW, tag="text_range2")
 
-button_lines = Button(tk, text="Toggle Lines", command=linesButtonSwitch, anchor=W)
-button_lines.configure(width=15, activebackground="#33B5E5", relief=FLAT)
+button_lines = Checkbutton(tk, text="Lines", anchor=W, variable=lines, onvalue=TRUE, offvalue=FALSE, command=linesButtonSwitch)
 button_lines_window = canvas.create_window(10, 30, anchor=NW, window=button_lines)
+button_lines.toggle()
 
-button_points = Button(tk, text="Toggle Points", command=pointsButtonSwitch, anchor=W)
-button_points.configure(width=15, activebackground="#33B5E5", relief=FLAT)
+button_points = Checkbutton(tk, text="Points", command=pointsButtonSwitch, anchor=W)
 button_points_window = canvas.create_window(10, 60, anchor=NW, window=button_points)
+button_points.toggle()
 
 button_save = Button(tk, text="Toggle Saving", command=savedata, anchor=W)
 button_save.configure(width=15, activebackground="#33B5E5", relief=FLAT)
 button_save = canvas.create_window(10, 90, anchor=NW, window=button_save)
 
 while True:
-    canvas.delete("point_id","line_id")                   # for refresh after one circle, for testing
-    canvas.delete("text_status")                          # for refreshing the status field
+    canvas.delete("point_id", "line_id")                    # for refresh after one circle, for testing
+    canvas.delete("text_status")                            # for refreshing the status field
 
     text_status = canvas.create_text(width-10, height, text=" Status: " + status, anchor=SE, tag="text_status")
 
     if saving == False:
-        x_array = []                                      # purge x array
-        y_array = []                                      # purge y_array
+        x_array = []                                        # purge x array
+        y_array = []                                        # purge y_array
 
-    for i in range(0, len(data)):                         # Translate input data into coordinates
+    for i in range(0, len(data)):                           # Translate input data into coordinates
         y = center_y - np.sin(angle[i]) * data[i] * 100
         x = center_x + np.cos(angle[i]) * data[i] * 100
         x_array.append(x)
         y_array.append(y)
-        if lines == True:                                 # Plot coordinates as lines
+        if lines == 1:                                      # Plot coordinates as lines
             canvas.delete("line_id[i]")
             line_id = canvas.create_line(canvas.winfo_width() / 2, canvas.winfo_height() / 2, x, y, tag="line_id")
 
-        if points == True:
+        if points == 1:
             canvas.delete("point_id[i]")
             point_id = canvas.create_oval(x - p_radius, y - p_radius, x + p_radius,
                                               y + p_radius,width=0, fill='red', tag="point_id")
