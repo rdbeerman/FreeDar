@@ -69,6 +69,8 @@ class Canvas(tk.Frame):
 
         self.p_radius = 2
 
+        self.angle = tl.e_angle_s(200, 2 * np.pi)        # temp until angle can be read from arduino
+
     def config_statusbar(self):
         self.statusbar = tk.Label(self.canvas, text="Standing By", bd=1, relief=tk.SUNKEN, anchor=tk.W)
         self.statusbar.pack(side=tk.BOTTOM, fill=tk.X)
@@ -109,6 +111,11 @@ class Canvas(tk.Frame):
 
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            if self.connected.get() == True:
+                try:
+                    self.ser.close()
+                except:
+                    self.master.destroy()
             self.master.destroy()
 
     def config_buttons(self):
@@ -137,13 +144,15 @@ class Canvas(tk.Frame):
     def connect(self):
         if self.connected.get() == False:                       # tries to connect when sim is selected, implement ifs
             try:
-                ser = serial.Serial(port=self.comport.get(), baudrate=9600)
+                self.ser = serial.Serial(port=self.comport.get(), baudrate=9600)
+                self.statusbar.configure(text="Connected to port " + self.comport.get())
                 self.connected.set(True)
             except serial.SerialException:
-                self.statusbar.configure(text="Error: Could not connect to sensor")
+                self.statusbar.configure(text="Error: Could not connect to sensor on port "+self.comport.get())
+
         if self.connected.get() == True:
             try:
-                ser.close()
+                self.ser.close()
             except UnboundLocalError:
                 self.statusbar.configure(text="Disconnected")
                 self.connected.set(False)
@@ -154,10 +163,18 @@ class Canvas(tk.Frame):
             self.connected.set(True)
             self.statusbar.configure(text="Simulating data")
 
+    def readdata(self):
+        if self.connected.get() == True:
+            try:
+                return float(self.ser.readline())
+            except:
+                self.statusbar.configure(text="Could not read")
+                self.connected.set(False)
+
     def drawlines(self):
-        for i in range(0, len(self.data)):  # Translate input data into coordinates
-            y = self.center_y - np.sin(self.angle[i]) * self.data[i] * 100
-            x = self.center_x + np.cos(self.angle[i]) * self.data[i] * 100
+        for i in range(0, len(self.angle)):  # Translate input data into coordinates
+            y = self.center_y - np.sin(self.angle[i]) * self.data * 100
+            x = self.center_x + np.cos(self.angle[i]) * self.data * 100
 
             self.x_array.append(x)
             self.y_array.append(y)
@@ -184,6 +201,7 @@ while True:
         mainWindow.y_array = []
 
     if mainWindow.connected.get() == True:                      # start drawing lines if connected
+        mainWindow.data = mainWindow.ser.readline()
         mainWindow.drawlines()
 
     mainWindow.update_idletasks()
