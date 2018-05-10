@@ -11,9 +11,9 @@ Freedar offers the following features, subject to change:
 
 Some of the planned features are:
 
-*combining data from multiple sensors.
-*Line detection in point cloud using Hough Transform.
-*Navigation using [SLAM](https://en.wikipedia.org/wiki/Simultaneous_localization_and_mapping).
+* combining data from multiple sensors.
+* Line detection in point cloud using Hough Transform.
+* Navigation using [SLAM](https://en.wikipedia.org/wiki/Simultaneous_localization_and_mapping).
 
 ## Hardware
 FreeDar ingests it's data over a serial connection in the shape of: "range, angle". FreeDar is tested with a custom, arduino based LIDAR, the code for which is provided in ~\Arduino
