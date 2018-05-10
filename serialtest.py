@@ -1,9 +1,12 @@
 import serial
 
-ser = serial.Serial('COM5')  # open serial port
+ser = serial.Serial('COM6')  # open serial port
 print(ser.name)              # check which port was really used
 
 while True:
-    print(ser.readline())          # write a string
-
+    string = ser.readline()          # write a string
+    values = string.split()
+    range = values[0]
+    angle = values[1]
+    print(float(range), float(angle))
 ser.close()                  # close port

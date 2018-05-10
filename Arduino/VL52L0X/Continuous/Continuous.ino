@@ -1,9 +1,3 @@
-/* This example shows how to use continuous mode to take
-range measurements with the VL53L0X. It is based on
-vl53l0x_ContinuousRanging_Example.c from the VL53L0X API.
-
-The range readings are in units of mm. */
-
 #include <Wire.h>
 #include <VL53L0X.h>
 #include <Servo.h>
@@ -20,21 +14,19 @@ void setup()
   servo.attach(9);
   sensor.init();
   sensor.setTimeout(500);
-
-  // Start continuous back-to-back mode (take readings as
-  // fast as possible).  To use continuous timed mode
-  // instead, provide a desired inter-measurement period in
-  // ms (e.g. sensor.startContinuous(100)).
-  sensor.startContinuous();
+  while (!Serial) {
+    ;
+  }
+  sensor.startContinuous();       //time between measurement set by using sensor.startcontiniuos(int)
 }
 
 void loop()
 {
   for (pos = 0; pos <= 180; pos += 5) {
     servo.write(pos);
-    Serial.print(sensor.readRangeContinuousMillimeters()-45);
+    Serial.print(sensor.readRangeContinuousMillimeters()-8);
     Serial.print(" ");
-    Serial.print(pos);
+    Serial.print(pos*3.14159/180);
     if (sensor.timeoutOccurred()) { Serial.print(" TIMEOUT"); }
     Serial.println();
   }
@@ -42,7 +34,7 @@ void loop()
     servo.write(pos);
     Serial.print(sensor.readRangeContinuousMillimeters()-45);
     Serial.print(" ");
-    Serial.print(pos);
+    Serial.print(pos*3.14159/180);
     if (sensor.timeoutOccurred()) { Serial.print(" TIMEOUT"); }
     Serial.println();
   }

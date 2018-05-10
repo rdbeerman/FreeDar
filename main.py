@@ -24,6 +24,7 @@ class Canvas(tk.Frame):
         self.config_port()
         self.config_statusbar()
         self.config_buttons()
+        self.count = 1
         self.canvas.bind("<Configure>", self.resize)
 
     def config_ui(self):
@@ -44,14 +45,14 @@ class Canvas(tk.Frame):
         self.grid_x = self.canvas.create_line(0, self.center_y, self.width, self.center_y, dash=4, tag="grid_x")
 
         self.grid_range1 = self.canvas.create_oval(self.center_x - 100, self.center_y - 100, self.center_x + 100, self.center_y + 100, dash=4, tag="grid_range1")
-        self.text_range1 = self.canvas.create_text(self.center_x + 5, self.center_y - 100, text='1 m', anchor=tk.SW, tag="text_range1")
+        self.text_range1 = self.canvas.create_text(self.center_x + 5, self.center_y - 100, text='200 mm', anchor=tk.SW, tag="text_range1")
 
         self.grid_range2 = self.canvas.create_oval(self.center_x - 200, self.center_y - 200, self.center_x + 200, self.center_y + 200, dash=4, tag="grid_range2")
-        self.text_range2 = self.canvas.create_text(self.center_x + 5, self.center_y - 200, text='2 m', anchor=tk.SW, tag="text_range2")
+        self.text_range2 = self.canvas.create_text(self.center_x + 5, self.center_y - 200, text='400 mm', anchor=tk.SW, tag="text_range2")
 
     def config_vars(self):
         self.lines = tk.BooleanVar()
-        self.lines.set(True)
+        self.lines.set(False)
         self.points = tk.BooleanVar()
         self.points.set(True)
 
@@ -63,6 +64,9 @@ class Canvas(tk.Frame):
         self.saving.set(False)
         self.button_save_text = tk.StringVar()
         self.button_save_text.set("Start saving")
+
+        self.range = 0
+        self.angle = 0
 
         self.x_array = []
         self.y_array = []
@@ -145,7 +149,7 @@ class Canvas(tk.Frame):
         if self.connected.get() == False:                       # tries to connect when sim is selected, implement ifs
             try:
                 self.ser = serial.Serial(port=self.comport.get(), baudrate=9600)
-                self.statusbar.configure(text="Connected to port " + self.comport.get())
+                self.statusbar.configure(text="Connected to port " + self.ser.name)
                 self.connected.set(True)
             except serial.SerialException:
                 self.statusbar.configure(text="Error: Could not connect to sensor on port "+self.comport.get())
@@ -159,37 +163,53 @@ class Canvas(tk.Frame):
 
         if self.comport.get() == "SIM":
             self.angle = tl.e_angle_s(200, 2 * np.pi)  # for testing
-            self.data = tl.e_data_s(200, 2 * np.pi, 2, 4)
+            self.range = tl.e_data_s(200, 2 * np.pi, 2, 4)
             self.connected.set(True)
             self.statusbar.configure(text="Simulating data")
 
     def readdata(self):
         if self.connected.get() == True:
+            if (self.ser.isOpen() == False):
+                self.ser.open()
             try:
-                return float(self.ser.readline())
+                self.string = self.ser.readline()  # write a string
+                self.values = self.string.split()
+                self.range_str = self.values[0]
+                self.angle_str = self.values[1]
+                self.range = float(self.range_str)
+                self.angle = float(self.angle_str)
             except:
                 self.statusbar.configure(text="Could not read")
                 self.connected.set(False)
 
     def drawlines(self):
-        for i in range(0, len(self.angle)):  # Translate input data into coordinates
-            y = self.center_y - np.sin(self.angle[i]) * self.data * 100
-            x = self.center_x + np.cos(self.angle[i]) * self.data * 100
+        y = self.center_y - np.sin(self.angle) * self.range / 2
+        x = self.center_x + np.cos(self.angle) * self.range / 2
 
-            self.x_array.append(x)
-            self.y_array.append(y)
+        self.x_array.append(x)
+        self.y_array.append(y)
 
-            if self.lines.get() == 1:  # Plot coordinates as lines
-                self.canvas.delete("line_id[i]")
-                self.line_id = self.canvas.create_line(self.canvas.winfo_width() / 2, self.canvas.winfo_height() / 2, x, y, tag="line_id")
+        if self.lines.get() == 1:
+            self.line_id = "line_id"+str(self.angle)
+            self.canvas.delete(self.line_id)
+            self.canvas.create_line(self.canvas.winfo_width() / 2, self.canvas.winfo_height() / 2, x, y,
+                                                   tags=(self.line_id,"all_lines"))
 
-            if self.points.get() == 1:
-                self.canvas.delete("point_id[i]")
-                self.point_id = self.canvas.create_oval(x - self.p_radius, y - self.p_radius, x + self.p_radius,
-                                              y + self.p_radius, width=0, fill='red', tag="point_id")
-                # time.sleep(0.01)
-            self.canvas.update()
-        self.canvas.delete("line_id", "point_id")
+        if self.points.get() == 1:
+            self.point_id = "point_id" + str(self.angle)
+            self.canvas.delete(self.point_id)
+            self.canvas.create_oval(x - self.p_radius, y - self.p_radius, x + self.p_radius,
+                                          y + self.p_radius, width=0, fill='red', tags=(self.point_id, "all_points"))
+
+        if self.points.get() == 0:
+            self.canvas.delete("all_points")
+
+        if self.lines.get() == 0:
+            self.canvas.delete("all_lines")
+
+        self.count = self.count + 1
+        self.canvas.update()
+
 
 root = tk.Tk()
 mainWindow = Canvas(root)
@@ -201,7 +221,7 @@ while True:
         mainWindow.y_array = []
 
     if mainWindow.connected.get() == True:                      # start drawing lines if connected
-        mainWindow.data = mainWindow.ser.readline()
+        mainWindow.readdata()
         mainWindow.drawlines()
 
     mainWindow.update_idletasks()
