@@ -2,12 +2,12 @@
 FreeDar is a simple utility for reading and saving data from a serial based [LIDAR](https://en.wikipedia.org/wiki/Lidar)/[RADAR](https://en.wikipedia.org/wiki/Radar) system.
 By using a range finder sensor (such as a VL53L0X ToF sensor) and rotating it around a center axis and recording the measured range and relative angle at which the measurement was made, a point cloud can be made describing the surrounding area.
 
-##Features
+## Features
 Freedar offers the following features, subject to change:
 
-*Select serial port of sensor.
-*Toggle between displaying options.
-*Save data as .csv file.
+* Select serial port of sensor.
+* Toggle between displaying options.
+* Save data as .csv file.
 
 Some of the planned features are:
 
