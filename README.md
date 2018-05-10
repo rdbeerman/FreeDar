@@ -11,6 +11,7 @@ Freedar offers the following features, subject to change:
 
 Some of the planned features are:
 
+* Ability to change scale.
 * Combining data from multiple sensors.
 * Line detection in point cloud using Hough Transform.
 * Navigation using [SLAM](https://en.wikipedia.org/wiki/Simultaneous_localization_and_mapping).
