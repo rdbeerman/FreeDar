@@ -11,10 +11,19 @@ Freedar offers the following features, subject to change:
 
 Some of the planned features are:
 
-* combining data from multiple sensors.
+* Combining data from multiple sensors.
 * Line detection in point cloud using Hough Transform.
 * Navigation using [SLAM](https://en.wikipedia.org/wiki/Simultaneous_localization_and_mapping).
 
 ## Hardware
 FreeDar ingests it's data over a serial connection in the shape of: "range, angle". FreeDar is tested with a custom, arduino based LIDAR, the code for which is provided in ~\Arduino
 The currently used VL53L0X ToF sensor has the advantage of being simple to work with, relatively fast and accurate. However, it's range is very limited at around 1 meter, so in the future a ultrasonic HC-SR04 will be used to provide range data at ranges higher than 1 meter.
+
+## Dependencies
+FreeDar is written in Python 3.6, it's dependencies are:
+
+* tkinter
+* numpy
+* pandas
+* time
+* serial

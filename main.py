@@ -3,7 +3,7 @@
 @Description:   Analyses and visualizes data from arduino LIDAR setup
 @Author:        R.D. Beerman
 @Date:          10/04/2018
-@License:
+@License:       GNU General Public License v3.0
 """
 import tkinter as tk
 from tkinter import messagebox
