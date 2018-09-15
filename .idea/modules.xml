@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/FreeDar.iml" filepath="$PROJECT_DIR$/.idea/FreeDar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../Readxry/.idea/Readxry.iml" filepath="$PROJECT_DIR$/../Readxry/.idea/Readxry.iml" />
     </modules>
   </component>
 </project>
